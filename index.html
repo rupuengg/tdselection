@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="hrisTemplating">
+    <head>
+        <!-- Basic Page Needs -->
+        <meta charset="utf-8" />
+        <title>
+			Test
+		</title>
+		<script src="angular.min.js"></script>
+		<script src="app.js"></script>
+	</head>
+	
+    <body ng-controller="mainController" class="nav-mini">
+        <input type="hidden" name="_token" value="{{ csrf_token()}}" />
+
+        <div class="container-fluid main-wrapper page-handler" style="padding-top:8px !important;">
+            <div class="body-wrapper body-lg">
+                <div class="container">
+					<time-sheet-panel></time-sheet-panel>
+                </div>
+			</div>
+		</div>
+	</body>
+</html>

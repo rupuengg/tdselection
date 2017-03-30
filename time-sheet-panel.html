@@ -1,0 +1,16 @@
+<table cellspacing="4" cellpadding="4" border="1" width="100%">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Email</th>
+			<th>Phone</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr ng-repeat="item in main.data">
+			<td ng-repeat="it in item" ng-init="current=main.startIndex;main.startIndex=main.startIndex+1;">
+				<cell-data it="it" current="current" m-down="mDown(current, it)" m-up="mUp(current, it)"></cell-data>
+			</td>
+		</tr>
+	</tbody>
+</table>
