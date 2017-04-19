@@ -27,7 +27,7 @@
 				startIndex : 0
 			};
 			
-			console.log('Main Controller', $scope.main);
+			// console.log('Main Controller', $scope.main);
 		}
 	])
 	.directive('timeSheetPanel', [
@@ -39,12 +39,16 @@
 				controller : [
 					'$scope',
 					function($scope){
+						var result;
 						$scope.mDown = function(attr1, attrs){
+							result = [];
+							result.push(attrs);
 							console.log(attr1, attrs);
 						};
 						
 						$scope.mUp = function(attr1, attrs){
-							console.log(attr1, attrs);
+							result.push(attrs)
+							console.log(attr1, attrs, result);
 						};
 					}
 				]

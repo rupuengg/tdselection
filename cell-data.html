@@ -1,3 +1,215 @@
-<div style="display:block;height:100%;">
-	{{it}} {{current}}
+<div class="calen-date {{!curCellActive ? 'doj-false' : ''}} {{!curCellActiveTer ? 'doj-false' : ''}} {{main.calen.timesheet.holidayInfo[col.clas][0].isHoliday == '1' ? 'off' : ''}} {{(main.calen.timesheet.holidayInfo[col.clas][0].isHoliday != 1 && main.calen.timesheet.lwpInfo[col.clas] && (main.calen.timesheet.leaveInfo[col.clas] || main.calen.timesheet.hoursInfo[col.clas] ||main.calen.timesheet.additionaInfo[col.clas])) ? (main.calen.timesheet.lwpInfo[col.clas][0].lop_days == '1.00' ? 'lwp_full' : 'lwp_half') : ''}}" style="display:block;height:100%;">
+    <div>
+        <span class="total-key">
+            {{it}} {{current}}
+        </span>
+    </div>
+    <div ng-if="col.type != 'total'" class="{{main.calen.timesheet.holidayInfo[col.clas][0].isHoliday == '0'|| main.calen.timesheet.hoursInfo[col.clas] ? 'off' : ''}}">
+        <span class="date">{{col.date}}</span>
+
+        <!--Default Small Box -->
+        <div class="small" ng-if="curCellActive && curCellActiveTer" ng-mousedown="mDown()" ng-mouseup="mUp()" ng-init="cellCnt = 0;">
+            <!-- Project information -->
+            <p ng-if="main.calen.timesheet.projectlist[col.clas] && (main.filters.type.indexOf('all') >= 0 || main.filters.type.indexOf('project') >= 0)" ng-style="{'height':'40px'}">
+                <!-- <span ng-repeat="proj in main.calen.timesheet.projectlist[col.clas]">
+                    <span ng-style="{'color':proj.tag_fore_color,'background-color':proj.tag_background_color}" class="text-center">
+                        {{proj.project_name.length > 15 ? (proj.project_name| limitTo:13)+'..' : proj.project_name}}
+                    </span>
+                </span> -->
+                <span ng-if="main.filters.project.indexOf('all') >= 0 || main.filters.project.indexOf(main.calen.timesheet.projectlist[col.clas][0].project_id) >= 0" ng-style="{'color':main.calen.timesheet.projectlist[col.clas][0].tag_fore_color}" class="text-center">
+                    {{main.calen.timesheet.projectlist[col.clas][0].project_name.length > 15 ? (main.calen.timesheet.projectlist[col.clas][0].project_name| limitTo:13)+'..' : main.calen.timesheet.projectlist[col.clas][0].project_name}}
+                </span>
+                <span ng-if="main.calen.timesheet.projectlist[col.clas].length > 1 && (main.filters.project.indexOf('all') >= 0 || main.filters.project.indexOf(main.calen.timesheet.projectlist[col.clas][0].project_id) >= 0)" class="text-center">
+                    {{(main.calen.timesheet.projectlist[col.clas].length - 1)+' more'}}
+                </span>
+                <!-- <a href="javascript:;">
+                    <span class="fa fa-plus-circle"></span>
+                </a> -->
+            </p>
+            <!-- Project information End -->
+
+            <p class="text-center" ng-if="main.calen.timesheet.hoursInfo[col.clas] && (main.filters.type.indexOf('all') >= 0 || main.filters.type.indexOf('time') >= 0)">
+                <span class="lwp">
+                    {{main.plusminus([main.calen.timesheet.hoursInfo[col.clas][0].total_time])}}
+                    <span style="color:#fa2626;display:inline-block;">
+                    {{main.plusminus([main.calen.timesheet.hoursInfo[col.clas][0].othertime], ' | ')}}
+                    </span>
+                    <!-- Miss punches -->
+                    <span class="lwp" style="display:inline;" ng-if="main.calen.timesheet.missPunches[col.clas]">
+                         | <strong class="LWP">?</strong>
+                    </span>
+                    <!-- End of miss punch -->
+                </span>
+            </p>
+
+            <!-- Total Time section -->
+            <p class="text-center p-0" style="font-size:0px;">
+                <span ng-init="cellCnt = cellCnt + main.toSeconds(main.calen.timesheet.hoursInfo[col.clas][0].total_time)">
+                </span>
+                <span ng-init="cellCnt = cellCnt + ((['LTY011','LTY009','LTY013'].join(',').indexOf(main.calen.timesheet.leaveInfo[col.clas][0].leave_type_id) >= 0 && ['2','3'].join(',').indexOf(main.calen.timesheet.leaveInfo[col.clas][0].leave_status) >= 0) ? main.toSeconds(main.calen.timesheet.leaveInfo[col.clas][0].leave_length_hours) : 0);"></span>
+                <span ng-init="cellCnt = cellCnt + main.toSeconds(main.calen.timesheet.additionaInfo[col.clas][0].applied_hours_H_M)"></span>
+                
+                <span ng-init="cellCnt = (main.calen.timesheet.holidayInfo[col.clas][0].isHoliday == 1 && main.calen.timesheet.timeConfig[col.clas].emp_work_station == 35 && cellCnt > 18000 ? 0 : cellCnt);"></span>
+                <span ng-init="cellCnt = (main.calen.timesheet.holidayInfo[col.clas][0].isHoliday == 1 && main.calen.timesheet.timeConfig[col.clas].emp_work_station != 35 ? 0 : cellCnt);"></span>
+                
+                <span ng-if="main.calen.timesheet.timeConfig[col.clas][0].default_hours">
+                    <span ng-init="main.calen.timesheet.rowtotal[current]=main.calen.timesheet.rowtotal[current]+(cellCnt > main.toSeconds(main.calen.timesheet.timeConfig[col.clas][0].default_hours) ? main.toSeconds(main.calen.timesheet.timeConfig[col.clas][0].default_hours) : cellCnt);"></span>
+                </span>
+                <span ng-if="!main.calen.timesheet.timeConfig[col.clas][0].default_hours">
+                    <span ng-init="main.calen.timesheet.rowtotal[current] = main.calen.timesheet.rowtotal[current] + (cellCnt);"></span>
+                </span>
+            </p>
+            <!-- Total Time section End -->
+
+            <!-- LWP, Sandwich and OFFs section -->
+            <div ng-if="(main.filters.type.indexOf('all') >= 0 || main.filters.type.indexOf('time') >= 0)">
+                <p class="text-center" ng-if="!isShowBig && main.calen.timesheet.holidayInfo[col.clas][0].isHoliday == 0">
+                    <span class="lwp">
+                        <strong  class="">-</strong>
+                    </span>
+                </p>
+                <p class="text-center" ng-if="isShowBig && main.calen.timesheet.holidayInfo[col.clas][0].isHoliday == 1 && main.calen.timesheet.lwpInfo[col.clas][0].is_sw == 1 && (main.filters.leavetype.indexOf('all') >= 0 || main.filters.leavetype.indexOf('SW') >= 0)">
+                    <span class="lwp">
+                        <strong class="LWP">SW</strong>
+                    </span>
+                </p>
+                <p class="text-center" ng-if="isShowBig && !(main.calen.timesheet.hoursInfo[col.clas] || main.calen.timesheet.leaveInfo[col.clas]) && main.calen.timesheet.holidayInfo[col.clas][0].isHoliday != 1 && main.calen.timesheet.lwpInfo[col.clas][0].is_sw != 1 && (main.filters.leavetype.indexOf('all') >= 0 || main.filters.leavetype.indexOf('LWP') >= 0)">
+                    <span class="lwp">
+                        <strong class="LWP">LWP</strong>
+                    </span>
+                </p>
+                <p class="text-center" ng-if="(main.calen.timesheet.holidayInfo[col.clas][0].isHoliday == 1 && main.calen.timesheet.lwpInfo[col.clas][0].is_sw != 1) && (main.filters.leavetype.indexOf('all') >= 0 || main.filters.leavetype.indexOf('OFF') >= 0)">
+                    <span class="lwp">
+                        <strong class="OFF">OFF</strong>
+                    </span>
+                </p>
+            </div>
+            <!-- LWP, Sandwich and OFFs section End -->
+
+            <!-- Addition hours section -->
+            <p class="text-center" ng-if="main.calen.timesheet.additionaInfo[col.clas] && (main.filters.type.indexOf('all') >= 0 || main.filters.type.indexOf('time') >= 0)">
+                <span class="lwp" ng-if="main.calen.timesheet.hoursInfo[col.clas] || main.calen.timesheet.leaveInfo[col.clas]">
+                    +{{main.calen.timesheet.additionaInfo[col.clas][0].applied_hours_H_M}} AH
+                </span>
+                <span class="lwp" ng-if="!main.calen.timesheet.hoursInfo[col.clas] && !main.calen.timesheet.leaveInfo[col.clas]">
+                    {{main.calen.timesheet.additionaInfo[col.clas][0].applied_hours_H_M}} AH
+                </span>     
+            </p>
+            <!-- Addition hours section end -->
+
+            <!-- Leave information -->
+            <p class="text-center {{main.calen.timesheet.leaveInfo[col.clas][0].leave_sort_name}}" ng-if="main.calen.timesheet.leaveInfo[col.clas] && (main.filters.type.indexOf('all') >= 0 || main.filters.type.indexOf('time') >= 0)">
+                <span class="lwp LWP" ng-if="main.calen.timesheet.leaveInfo[col.clas][0].leave_status != 2 && main.calen.timesheet.leaveInfo[col.clas][0].leave_status != 3 && (main.filters.leavetype.indexOf('all') >= 0 || main.filters.leavetype.indexOf(main.calen.timesheet.leaveInfo[col.clas][0].leave_type_id) >= 0)">
+                    {{main.calen.timesheet.leaveInfo[col.clas][0].leave_length_hours}} 
+                    {{(['LTY001','LTY016'].join(',').indexOf(main.calen.timesheet.leaveInfo[col.clas][0].leave_type_id) >= 0 && main.toSeconds(main.calen.timesheet.leaveInfo[col.clas][0].leave_length_hours) < main.toSeconds('8:0')) ? 'H' : ''}}
+                    {{main.calen.timesheet.leaveInfo[col.clas][0].leave_sort_name}}
+                </span>
+                <span class="lwp" ng-if="main.calen.timesheet.hoursInfo[col.clas] && (main.calen.timesheet.leaveInfo[col.clas][0].leave_status == 2 || main.calen.timesheet.leaveInfo[col.clas][0].leave_status == 3) && (main.filters.leavetype.indexOf('all') >= 0 || main.filters.leavetype.indexOf(main.calen.timesheet.leaveInfo[col.clas][0].leave_type_id) >= 0)">
+                    +{{main.calen.timesheet.leaveInfo[col.clas][0].leave_length_hours}} {{(['LTY001','LTY016'].join(',').indexOf(main.calen.timesheet.leaveInfo[col.clas][0].leave_type_id) >= 0 && main.toSeconds(main.calen.timesheet.leaveInfo[col.clas][0].leave_length_hours) < main.toSeconds('8:0')) ? 'H' : ''}}
+                    {{main.calen.timesheet.leaveInfo[col.clas][0].leave_sort_name}}
+                </span> 
+                <span class="lwp" ng-if="!main.calen.timesheet.hoursInfo[col.clas] && (main.calen.timesheet.leaveInfo[col.clas][0].leave_status == 2 || main.calen.timesheet.leaveInfo[col.clas][0].leave_status == 3) && (main.filters.leavetype.indexOf('all') >= 0 || main.filters.leavetype.indexOf(main.calen.timesheet.leaveInfo[col.clas][0].leave_type_id) >= 0)">
+                    {{main.calen.timesheet.leaveInfo[col.clas][0].leave_length_hours}} 
+                    {{(['LTY001','LTY016'].join(',').indexOf(main.calen.timesheet.leaveInfo[col.clas][0].leave_type_id) >= 0 && main.toSeconds(main.calen.timesheet.leaveInfo[col.clas][0].leave_length_hours) < main.toSeconds('8:0')) ? 'H' : ''}}
+                    {{main.calen.timesheet.leaveInfo[col.clas][0].leave_sort_name}}
+                </span> 
+            </p>    
+            <!-- Leave information End -->
+
+            <!-- Project information -->
+            <!-- <p ng-if="main.calen.timesheet.projectlist[col.clas]">
+                <a href="javascript:;">
+                    <span class="fa fa-plus-circle"></span>
+                </a>
+            </p> -->
+            <!-- Project information End -->
+        </div>
+        <!--Default Small Box End -->
+
+        <!--Hover Box Info-->
+        <div class="big" ng-if="curCellActive && curCellActiveTer">
+            <!-- Project List With Tagging -->
+            <p class="text-center" ng-if="main.calen.timesheet.projectlist[col.clas] && (main.filters.type.indexOf('all') >= 0 || main.filters.type.indexOf('project') >= 0)">
+                <span style="display:block;" ng-repeat="proj in main.calen.timesheet.projectlist[col.clas]">
+                    <strong>{{proj.project_name}}</strong><br/>
+                    {{proj.work_hours}} {{proj.tag_name}}
+                </span>
+            </p>
+            <!-- Project List With Tagging End -->
+
+            <p cass="text-center" ng-if="main.calen.timesheet.lwpInfo[col.clas] && !(main.calen.timesheet.lwpInfo[col.clas][0].reason_type == 3 && main.calen.timesheet.leaveInfo[col.clas])">
+                <span ng-bind-html="main.calen.timesheet.lwpInfo[col.clas][0].reason_txt"></span>
+            </p>
+
+            <p ng-init="leaveLWPMsg = (main.calen.timesheet.lwpInfo[col.clas][0].reason_type == 3 && main.calen.timesheet.leaveInfo[col.clas]) ? 1 : 0" style="font-size:0px;" class="p-0"></p>
+
+            <!-- In Out Time -->
+            <p cass="text-center" ng-if="main.calen.timesheet.hoursInfo[col.clas] && (main.filters.type.indexOf('all') >= 0 || main.filters.type.indexOf('time') >= 0)">
+                <b>In: </b>{{main.plusminus([main.calen.timesheet.hoursInfo[col.clas][0].in_time])}}
+                <b>Out: </b>{{main.plusminus([main.calen.timesheet.hoursInfo[col.clas][0].out_time])}}
+                <span ng-if="main.calen.timesheet.hoursInfo[col.clas][0].elapsed_time">
+                    <b>Lapsed: </b>{{main.calen.timesheet.hoursInfo[col.clas][0].elapsed_time}}
+                </span>
+            </p>
+            <!-- In Out Time End -->
+
+            <!-- Leave Info -->
+            <p cass="text-center" ng-if="main.calen.timesheet.leaveInfo[col.clas]">
+                <span style="display:block;" ng-if="main.filters.type.indexOf('all') >= 0 || main.filters.leavestatus.indexOf('10') >= 0 || main.filters.leavestatus.indexOf(main.calen.timesheet.leaveInfo[col.clas][0].leave_status) >= 0">
+                    {{main.calen.timesheet.leaveInfo[col.clas][0].leave_status == '0' ? 'Canceled' : ''}}
+                    {{main.calen.timesheet.leaveInfo[col.clas][0].leave_status == '1' ? 'Pending' : ''}}
+                    {{main.calen.timesheet.leaveInfo[col.clas][0].leave_status == '2' ? 'Approved' : ''}}
+                    {{main.calen.timesheet.leaveInfo[col.clas][0].leave_status == '3' ? 'Taken' : ''}}
+                    {{main.calen.timesheet.leaveInfo[col.clas][0].leave_status == '-1' ? 'Rejected' : ''}}
+                    <span>{{main.calen.timesheet.leaveInfo[col.clas][0].leave_sort_name}}</span> Request
+                    <span ng-if="leaveLWPMsg == 1">. Counted as LWP<br/></span>
+                    <span ng-if="main.calen.timesheet.leaveInfo[col.clas][0].leave_status == '1'">. Counted as LWP, if not approved.<br/></span>
+                    <span>Applied on : {{main.calen.timesheet.leaveInfo[col.clas][0].applied_on}}<br/></span>
+                </span>
+
+                <span ng-if="main.calen.timesheet.leaveInfo[col.clas][0].approveBy != ''" style="display:block;">
+                    Action Taken By <strong>{{main.calen.timesheet.leaveInfo[col.clas][0].approveBy}}</strong> On <strong>{{main.calen.timesheet.leaveInfo[col.clas][0].approved_date_time}}</strong>
+                </span>
+
+                <span ng-if="main.calen.timesheet.leaveInfo[col.clas][0].leave_comments != ''" style="display:block;">
+                    Emp Comment : <strong ng-bind-html="main.calen.timesheet.leaveInfo[col.clas][0].leave_comments"></strong>
+                </span>
+
+                <span ng-if="(main.calen.timesheet.leaveInfo[col.clas][0].approveComment != '' && main.calen.timesheet.leaveInfo[col.clas][0].approveComment != 'undefined')" style="display:block;">
+                    Sup Comment : <strong ng-bind-html="main.calen.timesheet.leaveInfo[col.clas][0].approveComment"></strong>
+                </span>
+            </p>
+            <!-- Leave Info End -->
+
+            <!-- Punches and Leave Detail -->
+            <div ng-if="main.filters.type.indexOf('all') >= 0 || main.filters.type.indexOf('time') >= 0">
+                <p class="text-center" ng-if="main.calen.timesheet.rawPunches[col.clas]">
+                    Punches Detail : <strong>{{main.calen.timesheet.rawPunches[col.clas][0].raw_punches}}</strong>
+                </p>
+                <p class="text-center" ng-if="main.calen.timesheet.hoursInfo[col.clas] && main.calen.timesheet.hoursInfo[col.clas][0].modby != ''">
+                    Time updated by : <strong>{{main.calen.timesheet.hoursInfo[col.clas][0].modby}}</strong> on <strong>{{main.calen.timesheet.hoursInfo[col.clas][0].moddate}}</strong>
+                </p>
+                <p class="text-center" ng-if="main.plusminus([main.calen.timesheet.hoursInfo[col.clas][0].pending_approval_hours])">
+                    Additional Work Hour(s) : <strong>{{main.plusminus([main.calen.timesheet.hoursInfo[col.clas][0].pending_approval_hours])}}</strong>
+                </p>
+                <p class="text-center" ng-if="main.plusminus([main.calen.timesheet.hoursInfo[col.clas][0].incoming_early_hours])">
+                    Incoming Early Hour(s) : <strong>{{main.plusminus([main.calen.timesheet.hoursInfo[col.clas][0].incoming_early_hours])}}</strong>
+                </p>
+                <p class="text-center" ng-if="main.plusminus([main.calen.timesheet.hoursInfo[col.clas][0].leaving_late_hours])">
+                    Leaving Late Hour(s) : <strong>{{main.plusminus([main.calen.timesheet.hoursInfo[col.clas][0].leaving_late_hours])}}</strong>
+                </p>
+                <p class="text-center" ng-if="main.calen.timesheet.additionaInfo[col.clas]">
+                    Taken Additional Hour(s) : <strong>{{main.calen.timesheet.additionaInfo[col.clas][0].applied_hours_H_M}}</strong>
+                </p>
+                <p class="text-center" ng-if="main.calen.timesheet.missPunches[col.clas]">
+                    Missed punch information already send to SOC department
+                </p>
+                <p class="text-center" ng-if="main.calen.timesheet.compolist[col.clas]">
+                    Compensatory off of <strong>{{main.calen.timesheet.compolist[col.clas][0].compoff_time}}</strong> has been credited to your account
+                </p>
+            </div>
+            <!-- Punches and Leave Detail End -->
+        </div>
+        <!--Hover Box Info End-->
+    </div>
 </div>
